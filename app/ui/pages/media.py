@@ -61,8 +61,8 @@ class MediaPage(ctk.CTkFrame):
         self.progress = ctk.CTkProgressBar(
             self.info_frame, 
             height=6, 
-            progress_color=Styles.BLUE, 
-            fg_color="#333",
+            progress_color=Styles.PRIMARY, 
+            fg_color=Styles.BORDER_FOCUS,
             corner_radius=3,
         )
         self.progress.pack(fill="x", pady=(0, 10))

@@ -19,19 +19,19 @@ class SystemMonitorWidget(ctk.CTkFrame):
         self.container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         
         # CPU
-        self.cpu = self._create_bar(self.container, "CPU", Styles.RED)
+        self.cpu = self._create_bar(self.container, "CPU", Styles.DANGER)
         self.cpu.pack(fill="x", pady=8)
         
         # RAM
-        self.ram = self._create_bar(self.container, "RAM", Styles.GREEN)
+        self.ram = self._create_bar(self.container, "RAM", Styles.SECONDARY)
         self.ram.pack(fill="x", pady=8)
         
         # Disk
-        self.disk = self._create_bar(self.container, "SSD", Styles.BLUE)
+        self.disk = self._create_bar(self.container, "SSD", Styles.PRIMARY)
         self.disk.pack(fill="x", pady=8)
 
         # Network (Simulated)
-        self.net = self._create_bar(self.container, "NET", Styles.ORANGE)
+        self.net = self._create_bar(self.container, "NET", Styles.WARNING)
         self.net.pack(fill="x", pady=8)
 
     def _create_bar(self, parent, label, color):
@@ -45,7 +45,7 @@ class SystemMonitorWidget(ctk.CTkFrame):
         val.pack(side="right")
         
         # Bar
-        bar = ctk.CTkProgressBar(frame, height=6, corner_radius=3, progress_color=color, fg_color="#333", border_width=0)
+        bar = ctk.CTkProgressBar(frame, height=6, corner_radius=3, progress_color=color, fg_color=Styles.BORDER_FOCUS, border_width=0)
         bar.pack(fill="x", pady=(4, 0))
         bar.set(0)
         

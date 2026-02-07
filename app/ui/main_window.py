@@ -2,6 +2,7 @@ import customtkinter as ctk
 
 from app.core import settings
 from app.core.data_manager import DataManager
+from app.ui.styles import Styles
 
 # Navigation
 from app.ui.widgets.sidebar import Sidebar
@@ -10,6 +11,7 @@ from app.ui.widgets.sidebar import Sidebar
 from app.ui.pages.home import HomePage
 from app.ui.pages.focus import FocusPage
 from app.ui.pages.media import MediaPage
+from app.ui.pages.settings import SettingsPage
 
 class ZenithOS(ctk.CTk):
     def __init__(self):
@@ -22,7 +24,7 @@ class ZenithOS(ctk.CTk):
         
         # --- Theme ---
         ctk.set_appearance_mode(settings.THEME_MODE)
-        self.configure(fg_color="#000000") # Pure Black (OLED)
+        self.configure(fg_color=Styles.BG_APP)
 
         # --- Data & State ---
         self.db = DataManager(settings.DATA_FILE)
@@ -39,7 +41,7 @@ class ZenithOS(ctk.CTk):
 
         # 2. Content Container
         self.content_area = ctk.CTkFrame(self, fg_color="transparent")
-        self.content_area.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        self.content_area.grid(row=0, column=1, sticky="nsew", padx=30, pady=30)
         self.content_area.grid_columnconfigure(0, weight=1)
         self.content_area.grid_rowconfigure(0, weight=1)
 
@@ -48,7 +50,7 @@ class ZenithOS(ctk.CTk):
             "home": HomePage(self.content_area, self.db),
             "focus": FocusPage(self.content_area, self.db),
             "media": MediaPage(self.content_area),
-            "settings": self._create_placeholder("Settings")
+            "settings": SettingsPage(self.content_area, self.db)
         }
 
         # Start at Home
@@ -73,7 +75,7 @@ class ZenithOS(ctk.CTk):
 
     def _create_placeholder(self, title):
         frame = ctk.CTkFrame(self.content_area, fg_color="transparent")
-        lbl = ctk.CTkLabel(frame, text=title, font=("Arial", 32, "bold"))
+        lbl = ctk.CTkLabel(frame, text=title, font=Styles.H1, text_color=Styles.TEXT_MAIN)
         lbl.pack(expand=True)
         return frame
 

@@ -15,8 +15,8 @@ class Sidebar(ctk.CTkFrame):
         self.logo = ctk.CTkLabel(
             self, 
             text="⌘", # Command Icon (Mac style)
-            font=("SF Pro Display", 40),
-            text_color="white"
+            font=(Styles.FONT_FAMILY, 36),
+            text_color=Styles.TEXT_MAIN
         )
         self.logo.pack(pady=(40, 50))
 
@@ -53,24 +53,26 @@ class Sidebar(ctk.CTkFrame):
         self.set_active("home")
 
     def _make_btn(self, icon, pid):
-        # Using a container frame for the selection indicator line
-        # But for simplicity, just button background change
+        # Apply Styles.SIDEBAR_BTN configuration
         btn = ctk.CTkButton(
             self.nav_frame, 
             text=icon, 
-            width=50, height=50, 
-            corner_radius=18, 
-            fg_color="transparent", 
-            text_color=Styles.TEXT_SEC,
-            hover_color=Styles.BG_CARD_HOVER,
-            font=("Arial", 24),
-            command=lambda: self.nav_callback(pid)
+            command=lambda: self.nav_callback(pid),
+            **Styles.SIDEBAR_BTN
         )
         return btn
 
     def set_active(self, page_id):
         for pid, btn in self.buttons.items():
             if pid == page_id:
-                btn.configure(fg_color=Styles.BLUE, text_color="white") # Active State
+                btn.configure(
+                    fg_color=Styles.PRIMARY, 
+                    text_color="white",
+                    hover_color=Styles.PRIMARY_HOVER
+                )
             else:
-                btn.configure(fg_color="transparent", text_color=Styles.TEXT_SEC)
+                btn.configure(
+                    fg_color=Styles.SIDEBAR_BTN["fg_color"], 
+                    text_color=Styles.SIDEBAR_BTN["text_color"],
+                    hover_color=Styles.SIDEBAR_BTN["hover_color"]
+                )

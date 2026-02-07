@@ -25,7 +25,7 @@ class NotesWidget(ctk.CTkFrame):
             self.header_frame, 
             text="SAVED", 
             font=Styles.CAPTION, 
-            text_color=Styles.GREEN
+            text_color=Styles.SECONDARY
         )
         self.save_lbl.pack(side="right")
 
@@ -48,5 +48,5 @@ class NotesWidget(ctk.CTkFrame):
     def save(self, event=None):
         content = self.txt.get("0.0", "end")
         self.db.set_notes(content)
-        self.save_lbl.configure(text="SAVING...", text_color=Styles.YELLOW)
-        self.after(1000, lambda: self.save_lbl.configure(text="SAVED", text_color=Styles.GREEN))
+        self.save_lbl.configure(text="SAVING...", text_color=Styles.WARNING)
+        self.after(1000, lambda: self.save_lbl.configure(text="SAVED", text_color=Styles.SECONDARY))

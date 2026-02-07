@@ -13,7 +13,7 @@ class MusicPlayerWidget(ctk.CTkFrame):
     Displays Album Art, Blurred Background (simulated), and Controls.
     """
     def __init__(self, parent):
-        super().__init__(parent, fg_color=Styles.BG_CARD, corner_radius=Styles.RADIUS_L, border_width=1, border_color="#333")
+        super().__init__(parent, fg_color=Styles.BG_CARD, corner_radius=Styles.RADIUS_L, border_width=1, border_color=Styles.BORDER_FOCUS)
         
         self.spotify = SpotifyService()
         self.spotify.add_callback(self.update_ui)
@@ -64,8 +64,8 @@ class MusicPlayerWidget(ctk.CTkFrame):
         self.progress = ctk.CTkProgressBar(
             self, 
             height=4, 
-            progress_color=Styles.BLUE, 
-            fg_color="#333",
+            progress_color=Styles.PRIMARY, 
+            fg_color=Styles.BORDER_FOCUS,
             corner_radius=2,
             border_width=0
         )
@@ -85,7 +85,7 @@ class MusicPlayerWidget(ctk.CTkFrame):
         color = "transparent"
         fg = "white"
         if highlight:
-            color = Styles.BLUE # Using token
+            color = Styles.PRIMARY # Using token
             fg = "white"
             
         btn = ctk.CTkButton(
@@ -94,7 +94,7 @@ class MusicPlayerWidget(ctk.CTkFrame):
             width=size, height=size, 
             corner_radius=size/2,
             fg_color=color,
-            hover_color="#333",
+            hover_color=Styles.BORDER_FOCUS,
             text_color=fg,
             font=("Arial", 16),
             command=cmd

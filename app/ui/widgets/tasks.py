@@ -26,7 +26,7 @@ class TaskManagerWidget(ctk.CTkFrame):
             text="+", 
             width=30, height=30, 
             corner_radius=15, 
-            fg_color=Styles.BLUE, 
+            fg_color=Styles.PRIMARY, 
             hover_color="#0062CC",
             font=("Arial", 18),
             command=self.show_add
@@ -83,7 +83,7 @@ class TaskManagerWidget(ctk.CTkFrame):
         
         # Checkbox
         is_done = task["done"]
-        chk_color = Styles.GREEN if is_done else Styles.BORDER_COLOR
+        chk_color = Styles.SECONDARY if is_done else Styles.BORDER_COLOR
         
         chk = ctk.CTkButton(
             row, 
