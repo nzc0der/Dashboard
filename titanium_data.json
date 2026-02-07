@@ -1,5 +1,13 @@
 {
     "tasks": [],
     "notes": "",
-    "username": "Commander"
+    "username": "Commander",
+    "theme": "dark",
+    "weather_location": {
+        "lat": 40.7128,
+        "lon": -74.006
+    },
+    "last_active": "2026-02-07T12:07:02.675701",
+    "session_count": 1,
+    "last_saved": "2026-02-07T12:07:02.675710"
 }
