@@ -1,1 +1,1 @@
-[![OpenSSF Best Practices](https://img.shields.io/badge/"in-develoupment-blue)
+[](https://img.shields.io/badge/"in-testing-green)
