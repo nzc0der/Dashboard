@@ -1,4 +1,6 @@
 import customtkinter as ctk
+import os
+from PIL import Image
 from app.ui.styles import Styles
 
 class Sidebar(ctk.CTkFrame):
@@ -21,19 +23,19 @@ class Sidebar(ctk.CTkFrame):
         self.logo.pack(pady=(40, 50))
 
         # 2. Nav Items
-        items = [
-            ("house.fill", "Home", "home", "🏠"),
-            ("bolt.fill", "Focus", "focus", "⚡"),
-            ("play.rectangle.fill", "Media", "media", "▶"),
-            ("gear", "Settings", "settings", "⚙️")
+        self.nav_items = [
+            ("home", "Home", "home"),
+            ("focus", "Focus", "focus"),
+            ("media", "Media", "media"),
+            ("settings", "Settings", "settings")
         ]
 
         # Container for nav to center it vertically if needed
         self.nav_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.nav_frame.pack(fill="x", expand=True, anchor="n")
 
-        for _, name, pid, icon in items:
-            btn = self._make_btn(icon, pid)
+        for icon_name, name, pid in self.nav_items:
+            btn = self._make_btn(icon_name, pid)
             btn.pack(pady=12)
             self.buttons[pid] = btn
             
@@ -52,11 +54,20 @@ class Sidebar(ctk.CTkFrame):
 
         self.set_active("home")
 
-    def _make_btn(self, icon, pid):
+    def _make_btn(self, icon_name, pid):
+        # Load Icon
+        icon_path = os.path.join("assets", "icons", "sidebar", f"{icon_name}.png")
+        img = None
+        if os.path.exists(icon_path):
+            pil_img = Image.open(icon_path)
+            # Resize for button
+            img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(24, 24))
+        
         # Apply Styles.SIDEBAR_BTN configuration
         btn = ctk.CTkButton(
             self.nav_frame, 
-            text=icon, 
+            text="", 
+            image=img,
             command=lambda: self.nav_callback(pid),
             **Styles.SIDEBAR_BTN
         )

@@ -20,10 +20,19 @@ class ClockWeatherWidget(ctk.CTkFrame):
         self.clock_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.clock_frame.grid(row=0, column=0, sticky="nsew", padx=30, pady=30)
         
+        self.greeting_lbl = ctk.CTkLabel(
+            self.clock_frame, 
+            text="Good Morning, Commander", 
+            font=("SF Pro Text", 18, "bold"),
+            text_color=Styles.PRIMARY,
+            anchor="w"
+        )
+        self.greeting_lbl.pack(anchor="w", pady=(0, 5))
+
         self.time_lbl = ctk.CTkLabel(
             self.clock_frame, 
             text="00:00", 
-            font=("SF Pro Display", 110, "bold"),
+            font=("SF Pro Display", 92, "bold"),
             text_color="white",
             anchor="w"
         )
@@ -32,7 +41,7 @@ class ClockWeatherWidget(ctk.CTkFrame):
         self.date_lbl = ctk.CTkLabel(
             self.clock_frame, 
             text="Monday, January 1", 
-            font=("SF Pro Display", 28, "bold"),
+            font=("SF Pro Display", 24, "bold"),
             text_color=Styles.TEXT_SEC, # Grey
             anchor="w"
         )
@@ -76,6 +85,17 @@ class ClockWeatherWidget(ctk.CTkFrame):
         current_time = now.strftime("%H:%M")
         current_date = now.strftime("%A, %B %d")
         
+        # Determine Greeting
+        hour = now.hour
+        greeting = "Good Morning, Commander"
+        if 12 <= hour < 18:
+            greeting = "Good Afternoon, Commander"
+        elif hour >= 18:
+            greeting = "Good Evening, Commander"
+            
+        if self.greeting_lbl.cget("text") != greeting:
+            self.greeting_lbl.configure(text=greeting)
+
         if self.time_lbl.cget("text") != current_time:
             self.time_lbl.configure(text=current_time)
         if self.date_lbl.cget("text") != current_date:

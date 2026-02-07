@@ -5,7 +5,7 @@ from app.ui.widgets.music import MusicPlayerWidget
 from app.ui.widgets.system_monitor import SystemMonitorWidget
 from app.ui.widgets.tasks import TaskManagerWidget
 from app.ui.widgets.notes import NotesWidget
-from app.ui.widgets.quick_links import QuickLinksWidget
+from app.ui.widgets.quick_actions import QuickActionsWidget
 
 from app.ui.widgets.calendar_view import CalendarWidget
 
@@ -44,9 +44,9 @@ class HomePage(ctk.CTkFrame):
         self.notes.grid(row=1, column=2, sticky="nsew", padx=15, pady=15)
 
         # --- Row 2 ---
-        # Quick Links (Wider)
-        self.links = QuickLinksWidget(self)
-        self.links.grid(row=2, column=0, columnspan=2, sticky="ew", padx=(0, 15), pady=15)
+        # Quick Actions (Wider)
+        self.actions = QuickActionsWidget(self)
+        self.actions.grid(row=2, column=0, columnspan=2, sticky="ew", padx=(0, 15), pady=15)
         
         # Music Player
         self.music = MusicPlayerWidget(self)
