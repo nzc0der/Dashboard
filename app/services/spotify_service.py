@@ -68,6 +68,7 @@ class SpotifyService:
             title = self._run_script('tell application "Spotify" to name of current track as string')
             artist = self._run_script('tell application "Spotify" to artist of current track as string')
             album = self._run_script('tell application "Spotify" to album of current track as string')
+            artwork_url = self._run_script('tell application "Spotify" to artwork url of current track as string')
             
             # Position and Duration are in seconds (or ms depending on API, usually seconds via AppleScript)
             # AppleScript for position: user can get 'player position'
@@ -87,6 +88,7 @@ class SpotifyService:
                 "title": title if title else "Unknown Title",
                 "artist": artist if artist else "Unknown Artist",
                 "album": album if album else "Unknown Album",
+                "artwork_url": artwork_url if artwork_url else None,
                 "position": pos,
                 "duration": dur,
                 "playing": playing

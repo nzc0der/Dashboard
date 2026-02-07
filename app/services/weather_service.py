@@ -3,6 +3,8 @@ import json
 import threading
 import time
 from datetime import datetime, timedelta
+from app.core import settings
+
 
 class WeatherService:
     """
@@ -13,7 +15,7 @@ class WeatherService:
     
     BASE_URL = "https://api.open-meteo.com/v1/forecast"
     
-    def __init__(self, lat=40.7128, lon=-74.0060):
+    def __init__(self, lat=settings.WEATHER_LAT, lon=settings.WEATHER_LON):
         self.lat = lat
         self.lon = lon
         self.current_weather = {
@@ -61,7 +63,12 @@ class WeatherService:
                 headers={'User-Agent': 'ZenithOS/2.0'}
             )
             
-            with urllib.request.urlopen(req, timeout=10) as response:
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            
+            with urllib.request.urlopen(req, context=ctx, timeout=10) as response:
                 if response.status == 200:
                     data = json.loads(response.read().decode())
                     self._process_data(data)

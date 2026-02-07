@@ -1,99 +1,81 @@
 import customtkinter as ctk
-from PIL import Image
 
 from app.core import settings
 from app.core.data_manager import DataManager
-from app.ui.styles import Styles
 
-# Widgets
-from app.ui.widgets.clock import ClockWeatherWidget
-from app.ui.widgets.music import MusicPlayerWidget
-from app.ui.widgets.system_monitor import SystemMonitorWidget
-from app.ui.widgets.tasks import TaskManagerWidget
-from app.ui.widgets.notes import NotesWidget
-from app.ui.widgets.quick_links import QuickLinksWidget
+# Navigation
+from app.ui.widgets.sidebar import Sidebar
+
+# Pages
+from app.ui.pages.home import HomePage
+from app.ui.pages.focus import FocusPage
+from app.ui.pages.media import MediaPage
 
 class ZenithOS(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        # Window Config
+        # --- Window Config ---
         self.title(f"{settings.APP_NAME}")
-        self.geometry("1400x900") # Larger window for 'Desktop' feel
+        self.geometry("1400x900")
+        self.minsize(1000, 700)
         
-        # Theme
+        # --- Theme ---
         ctk.set_appearance_mode(settings.THEME_MODE)
-        self.configure(fg_color="#000000") # Pure Black Background
+        self.configure(fg_color="#000000") # Pure Black (OLED)
 
-        # Data
+        # --- Data & State ---
         self.db = DataManager(settings.DATA_FILE)
+        self.current_page = None
 
-        # Layout: Grid System (Bento Box)
-        # Left Sidebar (Navigation/Status) | Main Workspace (Cards)
-        
-        self.grid_columnconfigure(0, weight=0, minsize=80) # Sidebar
-        self.grid_columnconfigure(1, weight=1) # Main
+        # --- Layout ---
+        self.grid_columnconfigure(0, weight=0, minsize=90) # Sidebar
+        self.grid_columnconfigure(1, weight=1)             # Content
         self.grid_rowconfigure(0, weight=1)
 
-        # === 1. SIDEBAR (Left) ===
-        self.sidebar = ctk.CTkFrame(self, fg_color="#101010", width=80, corner_radius=0)
+        # 1. Sidebar (Persistent)
+        self.sidebar = Sidebar(self, nav_callback=self.navigate_to)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
-        
-        # Sidebar Icons (Text for now, FontAwesome ideally)
-        icons = ["🏠", "⚡", "🎵", "⚙️"]
-        for i, ico in enumerate(icons):
-            btn = ctk.CTkButton(
-                self.sidebar, 
-                text=ico, 
-                width=50, height=50, 
-                corner_radius=15, 
-                fg_color="transparent", 
-                hover_color="#333",
-                font=("Arial", 24)
-            )
-            btn.pack(pady=20 if i == 0 else 10)
 
-        # === 2. MAIN WORKSPACE (Right) ===
-        self.main_area = ctk.CTkFrame(self, fg_color="transparent")
-        self.main_area.grid(row=0, column=1, sticky="nsew", padx=30, pady=30)
-        
-        # Grid within Main Area
-        # 3 Columns
-        self.main_area.grid_columnconfigure(0, weight=1)
-        self.main_area.grid_columnconfigure(1, weight=1)
-        self.main_area.grid_columnconfigure(2, weight=1)
-        self.main_area.grid_rowconfigure(0, weight=0) # Header Row
-        self.main_area.grid_rowconfigure(1, weight=1) # Main Content
+        # 2. Content Container
+        self.content_area = ctk.CTkFrame(self, fg_color="transparent")
+        self.content_area.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        self.content_area.grid_columnconfigure(0, weight=1)
+        self.content_area.grid_rowconfigure(0, weight=1)
 
-        # --- HEADER ROW (Welcome + Quick Glances) ---
-        # Large Clock Card (Spans 2 columns)
-        self.card_clock = ClockWeatherWidget(self.main_area)
-        self.card_clock.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
-        
-        # System status (Right column)
-        self.card_sys = SystemMonitorWidget(self.main_area)
-        self.card_sys.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+        # 3. Initialize Pages Cache (Lazy loading possible, but let's pre-load for speed)
+        self.pages = {
+            "home": HomePage(self.content_area, self.db),
+            "focus": FocusPage(self.content_area, self.db),
+            "media": MediaPage(self.content_area),
+            "settings": self._create_placeholder("Settings")
+        }
 
-        # --- CONTENT ROW ---
-        # Tasks (Left 2 columns)
-        self.card_tasks = TaskManagerWidget(self.main_area, self.db)
-        self.card_tasks.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
+        # Start at Home
+        self.navigate_to("home")
 
-        # Notes (Right column)
-        self.card_notes = NotesWidget(self.main_area, self.db)
-        self.card_notes.grid(row=1, column=2, sticky="nsew", padx=10, pady=10)
 
-        # --- BOTTOM ROW (Music + Links) ---
-        self.main_area.grid_rowconfigure(2, weight=0)
-        
-        # Quick Links
-        self.card_links = QuickLinksWidget(self.main_area)
-        self.card_links.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
-        
-        # Music (Simple floating bar style)
-        self.music_bar = MusicPlayerWidget(self.main_area)
-        self.music_bar.grid(row=2, column=2, sticky="ew", padx=10, pady=10)
+    def navigate_to(self, page_id):
+        # Update Sidebar State
+        self.sidebar.set_active(page_id)
 
+        # Hide current page
+        if self.current_page:
+            self.current_page.grid_forget()
+
+        # Show new page
+        if page_id in self.pages:
+            new_page = self.pages[page_id]
+            new_page.grid(row=0, column=0, sticky="nsew")
+            self.current_page = new_page
+        else:
+            print(f"Page {page_id} not found!")
+
+    def _create_placeholder(self, title):
+        frame = ctk.CTkFrame(self.content_area, fg_color="transparent")
+        lbl = ctk.CTkLabel(frame, text=title, font=("Arial", 32, "bold"))
+        lbl.pack(expand=True)
+        return frame
 
     def on_closing(self):
         self.db.save()
@@ -101,4 +83,6 @@ class ZenithOS(ctk.CTk):
 
 if __name__ == "__main__":
     app = ZenithOS()
+    # Handle graceful exit
+    app.protocol("WM_DELETE_WINDOW", app.on_closing)
     app.mainloop()

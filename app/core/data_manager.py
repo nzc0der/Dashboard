@@ -3,6 +3,8 @@ import os
 import time
 from datetime import datetime
 from threading import Lock
+from app.core import settings
+
 
 class DataManager:
     """
@@ -19,7 +21,7 @@ class DataManager:
             "notes": "",
             "username": "Commander",
             "theme": "dark",
-            "weather_location": {"lat": 40.7128, "lon": -74.0060}, # Defaults to NYC
+            "weather_location": {"lat": settings.WEATHER_LAT, "lon": settings.WEATHER_LON}, # Defaults to Ormond, Melbourne
             "last_active": None,
             "session_count": 0
         }

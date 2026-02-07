@@ -1,15 +1,12 @@
 import customtkinter as ctk
-from app.core.data_manager import DataManager
 from app.ui.styles import Styles
 
 class TaskManagerWidget(ctk.CTkFrame):
     """
-    Premium Task List.
-    iOS Reminders style.
+    Minimalist Checklist Card.
     """
-    def __init__(self, parent, db: DataManager):
-        # Card style
-        super().__init__(parent, **Styles.CARD_CONFIG)
+    def __init__(self, parent, db):
+        super().__init__(parent, fg_color=Styles.BG_CARD, corner_radius=Styles.RADIUS_L)
         self.db = db
         
         # Header
@@ -19,53 +16,51 @@ class TaskManagerWidget(ctk.CTkFrame):
         ctk.CTkLabel(
             self.header_frame, 
             text="Objectives", 
-            font=Styles.FONT_HEADER, 
+            font=Styles.H3, 
             text_color="white"
         ).pack(side="left")
         
-        # Add Button (Circular)
+        # Add (Circle)
         self.add_btn = ctk.CTkButton(
             self.header_frame, 
             text="+", 
             width=30, height=30, 
             corner_radius=15, 
-            fg_color="#0A84FF", 
-            hover_color="#007AFF",
+            fg_color=Styles.BLUE, 
+            hover_color="#0062CC",
             font=("Arial", 18),
-            command=self.show_add_dialog
+            command=self.show_add
         )
         self.add_btn.pack(side="right")
 
-        # Input Field (Hidden by default, or just inline at top)
-        self.input_var = ctk.StringVar()
+        # Input (Floating)
         self.input_entry = ctk.CTkEntry(
             self, 
-            textvariable=self.input_var,
-            placeholder_text="Add new task...",
+            placeholder_text="Add item...",
             height=40,
-            corner_radius=12,
+            corner_radius=Styles.RADIUS_M,
             border_width=0,
-            fg_color="#2C2C2E",
+            fg_color=Styles.BG_CARD_HOVER,
             text_color="white",
-            placeholder_text_color="#636366"
+            placeholder_text_color=Styles.TEXT_SEC
         )
         self.input_entry.pack(fill="x", padx=20, pady=(0, 10))
         self.input_entry.bind("<Return>", self.add_task)
 
-        # List Area
+        # List
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent", label_text=None)
         self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=(0, 20))
 
         self.refresh_ui()
 
-    def show_add_dialog(self):
+    def show_add(self):
         self.input_entry.focus_set()
 
     def add_task(self, event=None):
-        text = self.input_var.get().strip()
+        text = self.input_entry.get().strip()
         if text:
             self.db.add_task(text)
-            self.input_var.set("")
+            self.input_entry.delete(0, "end")
             self.refresh_ui()
 
     def refresh_ui(self):
@@ -73,73 +68,58 @@ class TaskManagerWidget(ctk.CTkFrame):
             widget.destroy()
 
         tasks = self.db.get_tasks()
-        if not tasks:
-            ctk.CTkLabel(self.scroll_frame, text="All objectives complete.", text_color="gray").pack(pady=40)
-            return
-
         sorted_tasks = sorted(tasks, key=lambda x: x["done"])
 
-        for t in sorted_tasks:
-            self.build_task_row(t)
+        if not tasks:
+            ctk.CTkLabel(self.scroll_frame, text="All objectives complete.", text_color=Styles.TEXT_SEC).pack(pady=40)
+            return
 
-    def build_task_row(self, task):
-        # Row Container
-        bg_color = "transparent"
-        text_color = "white" if not task["done"] else "#555"
-        font = Styles.FONT_BODY if not task["done"] else (Styles.FONT_BODY[0], Styles.FONT_BODY[1], "overstrike")
-        
+        for t in sorted_tasks:
+            self.build_row(t)
+
+    def build_row(self, task):
         row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent", height=40)
-        row.pack(fill="x", pady=5, padx=5)
+        row.pack(fill="x", pady=2, padx=5)
         
-        # Check Circle (Custom Button)
-        chk_color = "#3A3A3C" # Empty circle grey
-        if task["done"]:
-            chk_color = "#30D158" # Green
-            
-        chk_btn = ctk.CTkButton(
+        # Checkbox
+        is_done = task["done"]
+        chk_color = Styles.GREEN if is_done else Styles.BORDER_COLOR
+        
+        chk = ctk.CTkButton(
             row, 
-            text="✓" if task["done"] else "", 
+            text="✓" if is_done else "", 
             width=24, height=24, 
             corner_radius=12,
             fg_color=chk_color, 
-            hover_color="#32D74B",
-            font=("Arial", 12, "bold"),
-            command=lambda tid=task["id"]: self.toggle_task(tid)
+            hover_color=chk_color,
+            font=("Arial", 14, "bold"),
+            command=lambda id=task["id"]: self.toggle(id)
         )
-        chk_btn.pack(side="left", padx=(5, 10))
-
+        chk.pack(side="left", padx=10)
+        
         # Text
-        lbl_text = task["text"]
-        lbl = ctk.CTkLabel(
-            row, 
-            text=lbl_text, 
-            anchor="w", 
-            font=font, 
-            text_color=text_color
-        )
+        text_color = Styles.TEXT_SEC if is_done else "white"
+        font = (Styles.FONT_FAMILY, 14, "overstrike") if is_done else Styles.BODY
+        
+        lbl = ctk.CTkLabel(row, text=task["text"], font=font, text_color=text_color, anchor="w")
         lbl.pack(side="left", fill="x", expand=True)
-
-        # Delete (Only on hover? Or explicit button)
-        # Explicit small 'x'
+        
+        # Delete
         del_btn = ctk.CTkButton(
             row, 
             text="✕", 
             width=24, height=24, 
             fg_color="transparent", 
-            text_color="#FF453A", 
-            hover_color="#3A3A3C",
-            command=lambda tid=task["id"]: self.delete_task(tid)
+            text_color="#FF3B30", 
+            hover_color=Styles.BG_CARD_HOVER,
+            command=lambda id=task["id"]: self.delete(id)
         )
         del_btn.pack(side="right")
 
-        # Separator Line
-        separator = ctk.CTkFrame(self.scroll_frame, height=1, fg_color="#3A3A3C")
-        separator.pack(fill="x", padx=10, pady=(0, 5))
-
-    def toggle_task(self, task_id):
-        self.db.toggle_task(task_id)
+    def toggle(self, id):
+        self.db.toggle_task(id)
         self.refresh_ui()
 
-    def delete_task(self, task_id):
-        self.db.delete_task(task_id)
+    def delete(self, id):
+        self.db.delete_task(id)
         self.refresh_ui()

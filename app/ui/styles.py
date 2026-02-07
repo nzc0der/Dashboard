@@ -2,70 +2,66 @@ from app.core import settings
 
 class Styles:
     """
-    Apple/Samsung inspired design system.
-    Focus on hierarchy, whitespace, and rounded corners.
+    Ultra-Premium Design System.
     """
     
-    # Colors
-    BACKGROUND = settings.COLOR_BACKGROUND
-    CARD_BG = settings.COLOR_SECONDARY
-    PRIMARY = settings.COLOR_PRIMARY
-    TEXT_MAIN = settings.COLOR_TEXT_PRIMARY
-    TEXT_SUB = settings.COLOR_TEXT_SECONDARY
-    BORDER = settings.COLOR_BORDER
-    ACCENT = settings.COLOR_ACCENT
-    WARNING = settings.COLOR_WARNING
+    # --- Palette ---
+    # Backgrounds
+    BG_APP = "#000000"       # OLED Black
+    BG_SIDEBAR = "#09090b"   # Zinc-950
+    BG_CARD = "#121212"      # Surface 1 (Material) / Zinc-900
+    BG_CARD_HOVER = "#1E1E1E"
     
-    # Dimensions
-    CORNER_RADIUS = 24  # Large radius (Apple style)
-    PADDING_SMALL = 8
-    PADDING_MEDIUM = 16
-    PADDING_LARGE = 24
+    # Accents (Apple Human Interface Guidelines)
+    BLUE = "#007AFF"
+    GREEN = "#34C759"
+    INDIGO = "#5856D6"
+    ORANGE = "#FF9500"
+    PINK = "#FF2D55"
+    PURPLE = "#AF52DE"
+    RED = "#FF3B30"
+    TEAL = "#5AC8FA"
+    YELLOW = "#FFCC00"
     
-    # Fonts (San Francisco / Roboto style)
-    FONT_FAMILY = "SF Pro Display" if "SF Pro Display" else "Arial" # Fallback
+    # Text
+    TEXT_MAIN = "#FFFFFF"
+    TEXT_SEC = "#8E8E93" # Zinc-500
+    TEXT_TER = "#48484A" # Zinc-700
     
-    FONT_CLOCK_HUGE = (FONT_FAMILY, 82, "bold")
-    FONT_CLOCK_DATE = (FONT_FAMILY, 18, "bold")
+    # Borders
+    BORDER_COLOR = "#27272A" # Zinc-800
     
-    FONT_HEADER = (FONT_FAMILY, 22, "bold")
-    FONT_SUBHEADER = (FONT_FAMILY, 14, "bold")
-    FONT_BODY = (FONT_FAMILY, 14)
-    FONT_SMALL = (FONT_FAMILY, 12)
+    # --- Tokens ---
+    RADIUS_S = 8
+    RADIUS_M = 16
+    RADIUS_L = 24
+    RADIUS_XL = 32
     
-    # Widget Configurations
+    FONT_FAMILY = "SF Pro Display" # Fallback handled by system usually, or Arial
     
-    # "Glass" Card Style
-    CARD_CONFIG = {
-        "corner_radius": CORNER_RADIUS,
-        "fg_color": CARD_BG,
-        "border_width": 1, 
-        "border_color": BORDER
-    }
-    
-    BUTTON_PRIMARY = {
-        "corner_radius": 20,
-        "fg_color": PRIMARY,
-        "hover_color": "#007AFF", # Slightly lighter blue
-        "text_color": "white",
-        "font": (FONT_FAMILY, 14, "bold"),
-        "height": 40
-    }
+    # Fonts
+    H1 = (FONT_FAMILY, 32, "bold")
+    H2 = (FONT_FAMILY, 24, "bold")
+    H3 = (FONT_FAMILY, 18, "bold")
+    BODY = (FONT_FAMILY, 14)
+    CAPTION = (FONT_FAMILY, 12)
+    MONO = ("JetBrains Mono", 13)
 
-    BUTTON_GHOST = {
-        "corner_radius": 20,
+    # --- Component Configs ---
+    
+    CARD = {
+        "fg_color": BG_CARD,
+        "corner_radius": RADIUS_L,
+        "border_width": 1,
+        "border_color": BORDER_COLOR
+    }
+    
+    BUTTON_ICON = {
         "fg_color": "transparent",
-        "hover_color": "#2C2C2E",
-        "text_color": PRIMARY,
-        "font": (FONT_FAMILY, 14),
-        "height": 40
-    }
-
-    ENTRY_CONFIG = {
-        "corner_radius": 12,
-        "fg_color": "#2C2C2E", # Search field grey
-        "border_width": 0,
-        "text_color": "white",
-        "placeholder_text_color": "#636366",
-        "font": (FONT_FAMILY, 14)
+        "text_color": TEXT_SEC,
+        "hover_color": "#27272A",
+        "corner_radius": RADIUS_M,
+        "width": 50,
+        "height": 50,
+        "font": (FONT_FAMILY, 20)
     }

@@ -36,3 +36,7 @@ COLOR_BORDER = "#38383A" # Subtle border for glass effect
 ENABLE_SPOTIFY = True
 ENABLE_WEATHER = True
 ENABLE_SYSTEM_MONITOR = True
+
+# Weather Location (Ormond, Melbourne)
+WEATHER_LAT = -37.9038
+WEATHER_LON = 145.0396
