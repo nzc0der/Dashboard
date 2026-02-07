@@ -2,82 +2,130 @@ import customtkinter as ctk
 import threading
 import time
 from app.services.spotify_service import SpotifyService
+from app.ui.styles import Styles
 
 class MusicPlayerWidget(ctk.CTkFrame):
+    """
+    Minimalist Music Bar.
+    Looks like a dynamic island or floating pill.
+    """
     def __init__(self, parent):
-        super().__init__(parent, corner_radius=15, fg_color="#2b2b2b")
+        super().__init__(parent, fg_color="transparent")
         
         self.spotify = SpotifyService()
         self.spotify.add_callback(self.update_ui)
+        self.spotify.start_polling()
         
-        # Grid layout
-        self.grid_columnconfigure(0, weight=0) # Art
-        self.grid_columnconfigure(1, weight=1) # Info
-        self.grid_columnconfigure(2, weight=0) # Controls
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=0)
-
-        # 1. Album Art Placeholder (or fetch later)
-        self.art = ctk.CTkButton(
-            self, text="♪", width=70, height=70, 
-            corner_radius=10, fg_color="#444", hover=False,
-            font=("Arial", 32)
+        # Pill Container
+        self.container = ctk.CTkFrame(
+            self, 
+            corner_radius=30, 
+            # fg_color="#1C1C1E", # Dark Apple
+            fg_color="#0A0A0A", # Even darker for contrast
+            border_width=1,
+            border_color="#333"
         )
-        self.art.grid(row=0, column=0, rowspan=2, padx=15, pady=15, sticky="w")
-
-        # 2. Song Info
-        self.info_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.info_frame.grid(row=0, column=1, columnspan=2, sticky="ew", padx=(0,15), pady=(15,0))
+        self.container.pack(fill="x", expand=True, padx=10, pady=5)
         
-        self.title_lbl = ctk.CTkLabel(self.info_frame, text="Loading...", font=("Arial", 16, "bold"), anchor="w")
+        # Art Proxy (Circle)
+        self.art_placeholder = ctk.CTkButton(
+            self.container, 
+            text="♫", 
+            width=40, height=40, 
+            corner_radius=20, 
+            fg_color="#333", 
+            hover=False,
+            font=("SF Pro Text", 18)
+        )
+        self.art_placeholder.pack(side="left", padx=15, pady=10)
+
+        # Info Stack
+        self.info_stack = ctk.CTkFrame(self.container, fg_color="transparent")
+        self.info_stack.pack(side="left", fill="both", expand=True, pady=10)
+        
+        self.title_lbl = ctk.CTkLabel(
+            self.info_stack, 
+            text="Waiting for Music...", 
+            font=("SF Pro Display", 14, "bold"), 
+            anchor="w"
+        )
         self.title_lbl.pack(fill="x")
         
-        self.artist_lbl = ctk.CTkLabel(self.info_frame, text="Spotify Service", font=("Arial", 13), text_color="gray", anchor="w")
+        self.artist_lbl = ctk.CTkLabel(
+            self.info_stack, 
+            text="Spotify Integration", 
+            font=("SF Pro Text", 12), 
+            text_color="gray", 
+            anchor="w"
+        )
         self.artist_lbl.pack(fill="x")
 
-        # 3. Controls
-        self.controls_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.controls_frame.grid(row=1, column=1, columnspan=2, sticky="ew", padx=(0,15), pady=(5,10))
+        # Controls (Minimal Icons)
+        self.controls = ctk.CTkFrame(self.container, fg_color="transparent")
+        self.controls.pack(side="right", padx=15)
         
-        self.btn_prev = ctk.CTkButton(self.controls_frame, text="⏮", width=40, height=30, command=self.spotify.prev_track)
-        self.btn_prev.pack(side="left", padx=5)
-        
-        self.btn_play = ctk.CTkButton(self.controls_frame, text="▶", width=50, height=40, fg_color="#1f6aa5", command=self.spotify.play_pause)
-        self.btn_play.pack(side="left", padx=5)
-        
-        self.btn_next = ctk.CTkButton(self.controls_frame, text="⏭", width=40, height=30, command=self.spotify.next_track)
-        self.btn_next.pack(side="left", padx=5)
-        
-        # 4. Progress Bar
-        self.progress_bar = ctk.CTkProgressBar(self, height=6, progress_color="#1f6aa5")
-        self.progress_bar.grid(row=2, column=0, columnspan=3, sticky="ew", padx=15, pady=(0, 15))
-        self.progress_bar.set(0)
+        self.btn_prev = self._make_control_btn("⏮", self.spotify.prev_track)
+        self.btn_play = self._make_control_btn("▶", self.spotify.play_pause, size=34, highlight=True)
+        self.btn_next = self._make_control_btn("⏭", self.spotify.next_track)
 
-        # Update loop for smooth progress bar if possible
+        # Progress Bar (Thin line at bottom of pill)
+        self.progress = ctk.CTkProgressBar(
+            self.container, 
+            height=3, 
+            progress_color=Styles.PRIMARY, 
+            fg_color="#222",
+            border_width=0
+        )
+        self.progress.place(relx=0, rely=0.95, relwidth=1, anchor="sw")
+        self.progress.set(0)
+
         self.start_progress_update()
-        
-        # Start Service
-        self.spotify.start_polling()
 
-    def update_ui(self, track_info):
-        # Update labels safely
-        try:
-            self.title_lbl.configure(text=track_info["title"][:30]) # Truncate if too long
-            self.artist_lbl.configure(text=f"{track_info['artist']} • {track_info['album']}")
+    def _make_control_btn(self, text, cmd, size=28, highlight=False):
+        color = "transparent"
+        hover = "#333"
+        txt_color = "white"
+        
+        if highlight:
+            color = Styles.PRIMARY
+            hover = "#007AFF"
             
-            icon = "||" if track_info["playing"] else "▶"
+        btn = ctk.CTkButton(
+            self.controls, 
+            text=text, 
+            width=size, height=size, 
+            corner_radius=size/2,
+            fg_color=color,
+            hover_color=hover,
+            text_color=txt_color,
+            command=cmd,
+            font=("Arial", 14)
+        )
+        btn.pack(side="left", padx=4)
+        return btn
+
+    def update_ui(self, track):
+        try:
+            title = track["title"]
+            artist = track["artist"]
+            
+            # Marquee effect simulation (truncate)
+            if len(title) > 25: title = title[:25] + "..."
+            if len(artist) > 30: artist = artist[:30] + "..."
+            
+            self.title_lbl.configure(text=title)
+            self.artist_lbl.configure(text=artist)
+            
+            icon = "||" if track["playing"] else "▶"
             if self.btn_play.cget("text") != icon:
                 self.btn_play.configure(text=icon)
             
-            # Progress update logic handled separately for smoothness, but sync here too
-            duration = track_info["duration"]
-            position = track_info["position"]
-            if duration > 0:
-                self.progress_bar.set(position / duration)
-        except Exception as e:
-            print(f"UI Update Error: {e}")
+            dur = track["duration"]
+            pos = track["position"]
+            if dur > 0:
+                self.progress.set(pos/dur)
+        except:
+            pass
 
     def start_progress_update(self):
-        # Simulate smooth progress locally
         self.after(1000, self.start_progress_update)
-        # Real updates happen via callback from service

@@ -1,73 +1,82 @@
 import customtkinter as ctk
-import time
 from app.core.data_manager import DataManager
+from app.ui.styles import Styles
 
 class TaskManagerWidget(ctk.CTkFrame):
+    """
+    Premium Task List.
+    iOS Reminders style.
+    """
     def __init__(self, parent, db: DataManager):
-        super().__init__(parent, corner_radius=15, fg_color="#1a1a1a")
+        # Card style
+        super().__init__(parent, **Styles.CARD_CONFIG)
         self.db = db
         
         # Header
-        header = ctk.CTkLabel(self, text="MISSION OBJECTIVES", font=("Arial", 16, "bold"), anchor="w")
-        header.pack(fill="x", pady=10, padx=15)
-
-        # Input Area (Floating Action Bar style)
-        input_frame = ctk.CTkFrame(self, fg_color="transparent")
-        input_frame.pack(fill="x", padx=10, pady=(0, 10))
+        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.header_frame.pack(fill="x", padx=20, pady=(20, 10))
         
-        self.entry = ctk.CTkEntry(
-            input_frame, 
-            placeholder_text="Enter new objective...",
-            height=35,
-            border_width=0,
-            fg_color="#2b2b2b"
-        )
-        self.entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        self.entry.bind("<Return>", self.add_task)
+        ctk.CTkLabel(
+            self.header_frame, 
+            text="Objectives", 
+            font=Styles.FONT_HEADER, 
+            text_color="white"
+        ).pack(side="left")
         
-        add_btn = ctk.CTkButton(
-            input_frame, 
+        # Add Button (Circular)
+        self.add_btn = ctk.CTkButton(
+            self.header_frame, 
             text="+", 
-            width=35, height=35, 
-            fg_color="#1f6aa5", 
-            command=self.add_task
+            width=30, height=30, 
+            corner_radius=15, 
+            fg_color="#0A84FF", 
+            hover_color="#007AFF",
+            font=("Arial", 18),
+            command=self.show_add_dialog
         )
-        add_btn.pack(side="right")
+        self.add_btn.pack(side="right")
 
-        # Scrollable List
-        # Using a canvas or scrollable frame
+        # Input Field (Hidden by default, or just inline at top)
+        self.input_var = ctk.StringVar()
+        self.input_entry = ctk.CTkEntry(
+            self, 
+            textvariable=self.input_var,
+            placeholder_text="Add new task...",
+            height=40,
+            corner_radius=12,
+            border_width=0,
+            fg_color="#2C2C2E",
+            text_color="white",
+            placeholder_text_color="#636366"
+        )
+        self.input_entry.pack(fill="x", padx=20, pady=(0, 10))
+        self.input_entry.bind("<Return>", self.add_task)
+
+        # List Area
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent", label_text=None)
-        self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=(0, 20))
 
         self.refresh_ui()
+
+    def show_add_dialog(self):
+        self.input_entry.focus_set()
 
     def add_task(self, event=None):
-        text = self.entry.get()
-        if text.strip():
+        text = self.input_var.get().strip()
+        if text:
             self.db.add_task(text)
-            self.entry.delete(0, "end")
+            self.input_var.set("")
             self.refresh_ui()
 
-    def delete_task(self, task_id):
-        self.db.delete_task(task_id)
-        self.refresh_ui()
-
-    def toggle_task(self, task_id):
-        self.db.toggle_task(task_id)
-        self.refresh_ui()
-
     def refresh_ui(self):
-        # Prevent flickering by maybe checking diffs, but full rebuild is easier for small lists
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
         tasks = self.db.get_tasks()
-        
         if not tasks:
-            ctk.CTkLabel(self.scroll_frame, text="All objectives complete.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.scroll_frame, text="All objectives complete.", text_color="gray").pack(pady=40)
             return
 
-        # Sort tasks: incomplete first
         sorted_tasks = sorted(tasks, key=lambda x: x["done"])
 
         for t in sorted_tasks:
@@ -75,41 +84,62 @@ class TaskManagerWidget(ctk.CTkFrame):
 
     def build_task_row(self, task):
         # Row Container
-        bg_color = "#1f1f1f" if not task["done"] else "#121212"
+        bg_color = "transparent"
         text_color = "white" if not task["done"] else "#555"
-        font = ("Arial", 13) if not task["done"] else ("Arial", 13, "overstrike")
+        font = Styles.FONT_BODY if not task["done"] else (Styles.FONT_BODY[0], Styles.FONT_BODY[1], "overstrike")
         
-        row = ctk.CTkFrame(self.scroll_frame, fg_color=bg_color, corner_radius=8, height=45)
-        row.pack(fill="x", pady=3, padx=2)
+        row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent", height=40)
+        row.pack(fill="x", pady=5, padx=5)
         
-        # Checkbox (Custom fake checkbox)
-        chk_text = "chk" if not task["done"] else "chk_active"
-        # Using a button as checkbox for style
+        # Check Circle (Custom Button)
+        chk_color = "#3A3A3C" # Empty circle grey
+        if task["done"]:
+            chk_color = "#30D158" # Green
+            
         chk_btn = ctk.CTkButton(
             row, 
-            text="✓" if task["done"] else "",
-            width=24, height=24,
+            text="✓" if task["done"] else "", 
+            width=24, height=24, 
             corner_radius=12,
-            fg_color="#333" if not task["done"] else "#1f6aa5",
-            hover_color="#444",
+            fg_color=chk_color, 
+            hover_color="#32D74B",
+            font=("Arial", 12, "bold"),
             command=lambda tid=task["id"]: self.toggle_task(tid)
         )
-        chk_btn.pack(side="left", padx=10, pady=8)
+        chk_btn.pack(side="left", padx=(5, 10))
 
-        # Task Text
-        lbl_text = task["text"][:40] + "..." if len(task["text"]) > 40 else task["text"]
-        lbl = ctk.CTkLabel(row, text=lbl_text, anchor="w", font=font, text_color=text_color)
-        lbl.pack(side="left", fill="x", expand=True, padx=5)
+        # Text
+        lbl_text = task["text"]
+        lbl = ctk.CTkLabel(
+            row, 
+            text=lbl_text, 
+            anchor="w", 
+            font=font, 
+            text_color=text_color
+        )
+        lbl.pack(side="left", fill="x", expand=True)
 
-        # Delete Button (Hidden by default or always visible?)
-        # Let's make it always visible for simplicity
+        # Delete (Only on hover? Or explicit button)
+        # Explicit small 'x'
         del_btn = ctk.CTkButton(
             row, 
             text="✕", 
-            width=25, height=25, 
+            width=24, height=24, 
             fg_color="transparent", 
-            hover_color="#800000", 
-            text_color="#ff5555",
+            text_color="#FF453A", 
+            hover_color="#3A3A3C",
             command=lambda tid=task["id"]: self.delete_task(tid)
         )
-        del_btn.pack(side="right", padx=5)
+        del_btn.pack(side="right")
+
+        # Separator Line
+        separator = ctk.CTkFrame(self.scroll_frame, height=1, fg_color="#3A3A3C")
+        separator.pack(fill="x", padx=10, pady=(0, 5))
+
+    def toggle_task(self, task_id):
+        self.db.toggle_task(task_id)
+        self.refresh_ui()
+
+    def delete_task(self, task_id):
+        self.db.delete_task(task_id)
+        self.refresh_ui()

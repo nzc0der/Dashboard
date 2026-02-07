@@ -1,5 +1,4 @@
 import customtkinter as ctk
-import os
 from PIL import Image
 
 from app.core import settings
@@ -7,8 +6,7 @@ from app.core.data_manager import DataManager
 from app.ui.styles import Styles
 
 # Widgets
-from app.ui.widgets.top_bar import TopBarWidget
-from app.ui.widgets.clock import ClockWidget
+from app.ui.widgets.clock import ClockWeatherWidget
 from app.ui.widgets.music import MusicPlayerWidget
 from app.ui.widgets.system_monitor import SystemMonitorWidget
 from app.ui.widgets.tasks import TaskManagerWidget
@@ -16,110 +14,89 @@ from app.ui.widgets.notes import NotesWidget
 from app.ui.widgets.quick_links import QuickLinksWidget
 
 class ZenithOS(ctk.CTk):
-    """
-    Main application window for Zenith OS Dashboard.
-    coordinates all UI components and services.
-    """
-    
     def __init__(self):
         super().__init__()
 
-        # --- Base Configuration ---
-        self.title(f"{settings.APP_NAME} v{settings.APP_VERSION}")
-        self.geometry("1200x800")
+        # Window Config
+        self.title(f"{settings.APP_NAME}")
+        self.geometry("1400x900") # Larger window for 'Desktop' feel
         
-        # Theme Setup
+        # Theme
         ctk.set_appearance_mode(settings.THEME_MODE)
-        ctk.set_default_color_theme(settings.COLOR_THEME) # or a custom json path
+        self.configure(fg_color="#000000") # Pure Black Background
 
-        # Data Backend
+        # Data
         self.db = DataManager(settings.DATA_FILE)
 
-        # Layout Configuration
-        # 2 Columns (Left Sidebar/Main, Right Widgets) ?
-        # Or keeping the grid from before?
+        # Layout: Grid System (Bento Box)
+        # Left Sidebar (Navigation/Status) | Main Workspace (Cards)
         
-        # Let's try a sophisticated grid
-        # Row 0: Top Bar
-        # Row 1: Dashboard Content
-        # Row 2: Footer
+        self.grid_columnconfigure(0, weight=0, minsize=80) # Sidebar
+        self.grid_columnconfigure(1, weight=1) # Main
+        self.grid_rowconfigure(0, weight=1)
+
+        # === 1. SIDEBAR (Left) ===
+        self.sidebar = ctk.CTkFrame(self, fg_color="#101010", width=80, corner_radius=0)
+        self.sidebar.grid(row=0, column=0, sticky="nsew")
         
-        self.grid_rowconfigure(0, weight=0) # Top Bar fixed
-        self.grid_rowconfigure(1, weight=1) # Main Content
-        self.grid_columnconfigure(0, weight=1)
+        # Sidebar Icons (Text for now, FontAwesome ideally)
+        icons = ["🏠", "⚡", "🎵", "⚙️"]
+        for i, ico in enumerate(icons):
+            btn = ctk.CTkButton(
+                self.sidebar, 
+                text=ico, 
+                width=50, height=50, 
+                corner_radius=15, 
+                fg_color="transparent", 
+                hover_color="#333",
+                font=("Arial", 24)
+            )
+            btn.pack(pady=20 if i == 0 else 10)
 
-        # --- 1. Top Bar ---
-        self.top_bar = TopBarWidget(self)
-        self.top_bar.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 10))
-
-        # --- 2. Main Content Area ---
-        self.main_content = ctk.CTkFrame(self, fg_color="transparent")
-        self.main_content.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
+        # === 2. MAIN WORKSPACE (Right) ===
+        self.main_area = ctk.CTkFrame(self, fg_color="transparent")
+        self.main_area.grid(row=0, column=1, sticky="nsew", padx=30, pady=30)
         
-        # Configure Main Content Grid
-        # Col 0: Quick Info & Clock (Left)
-        # Col 1: Workspace (Tasks & Notes) (Center)
-        # Col 2: System Status (Right)
+        # Grid within Main Area
+        # 3 Columns
+        self.main_area.grid_columnconfigure(0, weight=1)
+        self.main_area.grid_columnconfigure(1, weight=1)
+        self.main_area.grid_columnconfigure(2, weight=1)
+        self.main_area.grid_rowconfigure(0, weight=0) # Header Row
+        self.main_area.grid_rowconfigure(1, weight=1) # Main Content
+
+        # --- HEADER ROW (Welcome + Quick Glances) ---
+        # Large Clock Card (Spans 2 columns)
+        self.card_clock = ClockWeatherWidget(self.main_area)
+        self.card_clock.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
         
-        self.main_content.grid_columnconfigure(0, weight=1) # Left
-        self.main_content.grid_columnconfigure(1, weight=2) # Center (Wider)
-        self.main_content.grid_columnconfigure(2, weight=1) # Right
-        self.main_content.grid_rowconfigure(0, weight=1)
+        # System status (Right column)
+        self.card_sys = SystemMonitorWidget(self.main_area)
+        self.card_sys.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
 
-        # === LEFT PANEL ===
-        self.left_panel = ctk.CTkFrame(self.main_content, fg_color="transparent")
-        self.left_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        self.left_panel.grid_rowconfigure(2, weight=1) # Spacer push up
+        # --- CONTENT ROW ---
+        # Tasks (Left 2 columns)
+        self.card_tasks = TaskManagerWidget(self.main_area, self.db)
+        self.card_tasks.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
 
-        # Clock
-        self.clock = ClockWidget(self.left_panel)
-        self.clock.pack(fill="x", pady=(0, 15))
+        # Notes (Right column)
+        self.card_notes = NotesWidget(self.main_area, self.db)
+        self.card_notes.grid(row=1, column=2, sticky="nsew", padx=10, pady=10)
+
+        # --- BOTTOM ROW (Music + Links) ---
+        self.main_area.grid_rowconfigure(2, weight=0)
         
-        # Quick Links (Moved to Left Panel for better access)
-        self.links = QuickLinksWidget(self.left_panel)
-        self.links.pack(fill="x", pady=(0, 15))
-
-        # Music Player
-        self.music = MusicPlayerWidget(self.left_panel)
-        self.music.pack(fill="x", pady=(0, 15))
-
-
-        # === CENTER PANEL ===
-        self.center_panel = ctk.CTkFrame(self.main_content, fg_color="transparent")
-        self.center_panel.grid(row=0, column=1, sticky="nsew", padx=10)
-        self.center_panel.grid_rowconfigure(0, weight=1)
-        self.center_panel.grid_rowconfigure(1, weight=1)
-        self.center_panel.grid_columnconfigure(0, weight=1)
-
-        # Tasks
-        self.tasks = TaskManagerWidget(self.center_panel, self.db)
-        self.tasks.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
-
-        # Notes
-        self.notes = NotesWidget(self.center_panel, self.db)
-        self.notes.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
-
-
-        # === RIGHT PANEL ===
-        self.right_panel = ctk.CTkFrame(self.main_content, fg_color="transparent")
-        self.right_panel.grid(row=0, column=2, sticky="nsew", padx=(10, 0))
-        self.right_panel.grid_columnconfigure(0, weight=1)
-        self.right_panel.grid_rowconfigure(0, weight=1)
-
-        # System Monitor
-        self.sys_mon = SystemMonitorWidget(self.right_panel)
-        self.sys_mon.pack(fill="both", expand=True)
-
-        # Add a placeholder for future widgets (e.g. Stocks)
-        # self.stocks = StockWidget(self.right_panel)
-        # self.stocks.pack(...)
-
+        # Quick Links
+        self.card_links = QuickLinksWidget(self.main_area)
+        self.card_links.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
         
+        # Music (Simple floating bar style)
+        self.music_bar = MusicPlayerWidget(self.main_area)
+        self.music_bar.grid(row=2, column=2, sticky="ew", padx=10, pady=10)
+
+
     def on_closing(self):
-        """Handle application shutdown."""
-        # Save data
         self.db.save()
-        # Destroy
         self.destroy()
 
 if __name__ == "__main__":
