@@ -8,6 +8,12 @@ import sys
 import os
 from pathlib import Path
 
+def resource_path(relative):
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS) / relative
+    return Path(__file__).parent / relative
+
+
 # Add the app directory to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
