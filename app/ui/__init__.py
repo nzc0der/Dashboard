@@ -1,1 +1,1 @@
-from .main_window import ZenithOS
+from .main_window import Dashboard

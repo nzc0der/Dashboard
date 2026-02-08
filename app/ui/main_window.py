@@ -13,7 +13,7 @@ from app.ui.pages.focus import FocusPage
 from app.ui.pages.media import MediaPage
 from app.ui.pages.settings import SettingsPage
 
-class ZenithOS(ctk.CTk):
+class Dashboard(ctk.CTk):
     def __init__(self):
         super().__init__()
 
@@ -84,7 +84,7 @@ class ZenithOS(ctk.CTk):
         self.destroy()
 
 if __name__ == "__main__":
-    app = ZenithOS()
+    app = Dashboard()
     # Handle graceful exit
     app.protocol("WM_DELETE_WINDOW", app.on_closing)
     app.mainloop()

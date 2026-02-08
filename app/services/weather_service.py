@@ -1,5 +1,6 @@
 """Weather service for fetching and managing weather data."""
 
+import certifi
 import json
 import logging
 import ssl
@@ -202,14 +203,13 @@ class WeatherService:
         req = urllib.request.Request(
             url,
             headers={
-                'User-Agent': 'ZenithOS/2.0',
+                'User-Agent': 'Dashboard/2.0',
                 'Accept': 'application/json'
             }
         )
         
-        # Use default SSL context with proper verification
-        # Only disable verification if absolutely necessary (not recommended)
-        ctx = ssl.create_default_context()
+        # Use certifi's CA bundle for SSL verification
+        ctx = ssl.create_default_context(cafile=certifi.where())
         
         with urllib.request.urlopen(req, context=ctx, timeout=self.DEFAULT_TIMEOUT) as response:
             if response.status == 200:

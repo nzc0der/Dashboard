@@ -57,7 +57,7 @@ class SettingsPage(ctk.CTkFrame):
         # --- About ---
         ctk.CTkLabel(
             self.content, 
-            text="ZenithOS v2.0 - Built by Commander", 
+            text="Dashboard v2.0 - Built by Commander", 
             font=Styles.CAPTION, 
             text_color=Styles.TEXT_SEC
         ).pack(pady=20)
